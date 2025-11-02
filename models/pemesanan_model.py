@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, func
 from config.database import Base
-from datetime import datetime
+
 
 class Pemesanan(Base):
     __tablename__ = "pemesanan"
@@ -11,5 +11,5 @@ class Pemesanan(Base):
     id_kategori = Column(Integer, nullable=False)
     jumlah = Column(Integer, nullable=False)
     status = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), server_onupdate=func.now(), nullable=False)

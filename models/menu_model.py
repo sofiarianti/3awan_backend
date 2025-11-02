@@ -1,6 +1,6 @@
-from sqlalchemy import Column, Integer, String, DateTime
+from sqlalchemy import Column, Integer, String, DateTime, func
 from config.database import Base
-from datetime import datetime
+
 
 class Menu(Base):
     __tablename__ = "menu"
@@ -11,5 +11,5 @@ class Menu(Base):
     harga = Column(Integer, nullable=False)
     deskripsi = Column(String, nullable=False)
     image_url = Column(String, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), server_onupdate=func.now(), nullable=False)

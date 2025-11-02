@@ -2,7 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
 # URL database dari Railway
-DATABASE_URL = "postgresql://postgres:eiMeYcWKtzVHkIvSyNqBOcZGfYvxTHrq@mainline.proxy.rlwy.net:32824/railway"
+DATABASE_URL = "postgresql://postgres:HNbcOdTzHuGccXpOLkNQFGBiYoODrSbX@yamanote.proxy.rlwy.net:53455/railway"
 # Engine koneksi
 engine = create_engine(DATABASE_URL, echo=True)
 # Session untuk query

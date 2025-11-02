@@ -16,8 +16,8 @@ def add_kategori():
     db: Session = next(get_db())
     body = request.json
 
+    # Jangan terima atau set id_kategori dari client - biarkan DB yang mengisi secara otomatis
     new_data = Kategori(
-        id_kategori=body["id_kategori"],
         kategori=body["kategori"],
     )
     db.add(new_data)
@@ -26,7 +26,7 @@ def add_kategori():
 
     return jsonify({
         "message": "Data berhasil ditambahkan",
-        "id_wisata": new_data.id_kategori,
+        "id_kategori": new_data.id_kategori,
         "kategori": new_data.kategori,
     })
 
