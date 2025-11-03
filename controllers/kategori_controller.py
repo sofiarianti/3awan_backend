@@ -39,7 +39,7 @@ def update_kategori(id_kategori):
         return jsonify({"message": "Wisata tidak ditemukan"}), 404
 
     # Update field sesuai data yang dikirim
-    kategori.kategori = body.get("nama_wisata", kategori.kategori)
+    kategori.kategori = body.get("kategori", kategori.kategori)
 
     db.commit()
     db.refresh(kategori)
@@ -47,18 +47,18 @@ def update_kategori(id_kategori):
     return jsonify({
         "message": "Data berhasil diperbarui",
         "data": {
-            "id_wisata": kategori.id_kategori,
-            "nama_wisata": kategori.kategori,
+            "id_katrgori": kategori.id_kategori,
+            "kategori": kategori.kategori,
         }
     }), 200
 
 def delete_kategori(id_kategori):
     db: Session = next(get_db())
-    Kategori = db.query(Kategori).filter(Kategori.id_kategori == id_kategori).first()
-    if not Kategori:
+    kategori = db.query(Kategori).filter(Kategori.id_kategori == id_kategori).first()
+    if not kategori:
         return jsonify({"message": "Wisata tidak ditemukan"}), 404
 
-    db.delete(Kategori)
+    db.delete(kategori)
     db.commit()
 
-    return jsonify({"message": f"Data wisata dengan id {id_kategori} berhasil dihapus"}), 200
+    return jsonify({"message": f"Data kategori dengan id {id_kategori} berhasil dihapus"}), 200

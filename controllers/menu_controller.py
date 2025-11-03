@@ -1,7 +1,9 @@
 from flask import jsonify, request
 from config.database import get_db
 from models.menu_model import Menu
+from models.kategory_model import Kategori
 from sqlalchemy.orm import Session
+from sqlalchemy import join
 
 def get_all_menu():
     db: Session = next(get_db())
@@ -14,6 +16,7 @@ def get_all_menu():
         "deskripsi": m.deskripsi,
         "image_url": m.image_url
     } for m in data])
+
 
 def add_menu():
     db: Session = next(get_db())
@@ -81,3 +84,21 @@ def delete_menu(id_menu):
     db.commit()
 
     return jsonify({"message": f"Data menu dengan id {id_menu} berhasil dihapus"}), 200
+
+def get_menu_by_kategori(id_kategori):
+    db: Session = next(get_db())
+
+    # inner join Menu <-> Kategori on id_kategori
+    q = db.query(Menu, Kategori).join(Kategori, Menu.id_kategori == Kategori.id_kategori).filter(Menu.id_kategori == id_kategori)
+    results = q.all()
+
+    # results is list of tuples (Menu, Kategori)
+    return jsonify([{
+        "id_menu": m.id_menu,
+        "nama_makanan": m.nama_makanan,
+        "id_kategori": m.id_kategori,
+        "kategori": k.kategori,
+        "harga": m.harga,
+        "deskripsi": m.deskripsi,
+        "image_url": m.image_url
+    } for (m, k) in results])

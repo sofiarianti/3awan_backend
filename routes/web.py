@@ -1,6 +1,6 @@
 from flask import Blueprint
 from controllers.kategori_controller import get_all_kategori, add_kategori, update_kategori, delete_kategori
-from controllers.menu_controller import get_all_menu, add_menu, update_menu, delete_menu
+from controllers.menu_controller import get_all_menu, add_menu, update_menu, delete_menu, get_menu_by_kategori
 from controllers.user_controller import get_all_users, add_user, update_user, delete_user
 from controllers.pemesanan_controller import get_all_pemesanan, add_pemesanan, update_pemesanan, delete_pemesanan
 from controllers.pembayaran_controller import get_all_pembayaran, add_pembayaran, update_pembayaran, delete_pembayaran
@@ -12,6 +12,7 @@ web.route("/", methods=["GET"])(get_all_menu)
 web.route("/menu/insert", methods=["POST"])(add_menu)
 web.route("/menu/update/<int:id_menu>", methods=["PUT"])(update_menu)
 web.route("/menu/delete/<int:id_menu>", methods=["DELETE"])(delete_menu)
+web.route("/menu/kategori/<int:id_kategori>", methods=["GET"])(get_menu_by_kategori)
 
 # Kategori routes
 web.route("/kategori", methods=["GET"])(get_all_kategori)
