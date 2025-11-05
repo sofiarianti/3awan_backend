@@ -10,7 +10,8 @@ def get_all_users():
         "id_pengguna": u.id_pengguna,
         "nama": u.nama,
         "email": u.email,
-        "password": u.password
+        "password": u.password,
+        "role": u.role
     } for u in data])
 
 def add_user():
@@ -20,7 +21,8 @@ def add_user():
     new_data = Pengguna(
         nama=body["nama"],
         email=body["email"],
-        password=body["password"]
+        password=body["password"],
+        role=body["role"]
     )
     db.add(new_data)
     db.commit()
@@ -31,7 +33,8 @@ def add_user():
         "data": {
             "id_pengguna": new_data.id_pengguna,
             "nama": new_data.nama,
-            "email": new_data.email
+            "email": new_data.email,
+            "role": new_data.role
         }
     })
 
@@ -46,6 +49,7 @@ def update_user(id_pengguna):
     user.nama = body.get("nama", user.nama)
     user.email = body.get("email", user.email)
     user.password = body.get("password", user.password)
+    user.role = body.get("role", user.role)
 
     db.commit()
     db.refresh(user)
@@ -55,7 +59,8 @@ def update_user(id_pengguna):
         "data": {
             "id_pengguna": user.id_pengguna,
             "nama": user.nama,
-            "email": user.email
+            "email": user.email,
+            "role": user.role
         }
     }), 200
 
