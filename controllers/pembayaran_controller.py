@@ -35,11 +35,8 @@ def get_all_pembayaran():
 
     return jsonify([{
         "id_pembayaran": p.id_pembayaran,
-        "id_pengguna": p.id_pengguna,
         "nama_pengguna": nama,
-        "id_menu": p.id_menu,
         "nama_menu": nama_makanan,
-        "id_kategori": p.id_kategori,
         "kategori": kategori,
         "jumlah": p.jumlah,
         "metode_pembayaran": p.metode_pembayaran,
