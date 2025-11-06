@@ -2,13 +2,12 @@ from sqlalchemy import text
 from config.database import engine
 
 with engine.connect() as conn:
-    print("🔧 Menambahkan kolom 'role' ke tabel 'pengguna'...")
+    print("🗑️ Menghapus tabel 'pemesanan' jika ada...")
 
-    # Tambahkan kolom 'role' jika belum ada
+    # Hapus tabel 'pemesanan' jika sudah ada di database
     conn.execute(text("""
-        ALTER TABLE pengguna
-        ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'user';
+        DROP TABLE IF EXISTS pemesanan;
     """))
 
     conn.commit()
-    print("✅ Kolom 'role' berhasil ditambahkan (atau sudah ada sebelumnya)!")
+    print("✅ Tabel 'pemesanan' berhasil dihapus (atau tidak ada sebelumnya)!")
