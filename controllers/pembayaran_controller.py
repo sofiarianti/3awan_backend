@@ -5,16 +5,32 @@ from models.user_model import Pengguna
 from models.menu_model import Menu
 from models.kategory_model import Kategori
 from sqlalchemy.orm import Session
-import urllib.parse
+import qrcode
+import os
 
 
-def generate_qr_code_url(data):
+def generate_qr_code_url(data, id_pembayaran):
     """
-    Generate QR code URL menggunakan QR Server API
+    Generate QR code and save it as a file
     """
-    encoded_data = urllib.parse.quote(data)
-    qr_url = f"https://api.qrserver.com/v1/create-qr-code/?size=300x300&data={encoded_data}"
-    return qr_url
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Save the image
+    if not os.path.exists("qrcodes"):
+        os.makedirs("qrcodes")
+    file_path = f"qrcodes/pembayaran_{id_pembayaran}.png"
+    img.save(file_path)
+
+    return file_path
 
 
 def get_all_pembayaran():
@@ -57,24 +73,23 @@ def add_pembayaran():
         if field not in body:
             return jsonify({"message": f"Field {field} harus diisi"}), 400
 
-    # Data untuk QR code
-    qr_data = f"Pengguna:{body['id_pengguna']}_Menu:{body['id_menu']}_Jumlah:{body['jumlah']}_Metode:{body['metode_pembayaran']}"
-
-    # Generate QR code (jika tidak dikirim dari body)
-    qr_code_url = body.get("qr_code_url")
-    if not qr_code_url or not str(qr_code_url).strip():
-        qr_code_url = generate_qr_code_url(qr_data)
-
     new_data = Pembayaran(
         id_pengguna=body["id_pengguna"],
         id_menu=body["id_menu"],
         id_kategori=body["id_kategori"],
         jumlah=body["jumlah"],
         metode_pembayaran=body["metode_pembayaran"],
-        qr_code_url=qr_code_url,
         status=body["status"]
     )
     db.add(new_data)
+    db.commit()
+    db.refresh(new_data)
+
+    # Data untuk QR code
+    qr_data = f"ID_Pembayaran:{new_data.id_pembayaran}_Pengguna:{body['id_pengguna']}_Menu:{body['id_menu']}_Jumlah:{body['jumlah']}_Metode:{body['metode_pembayaran']}"
+
+    # Generate QR code
+    new_data.qr_code_url = generate_qr_code_url(qr_data, new_data.id_pembayaran)
     db.commit()
     db.refresh(new_data)
 
@@ -109,12 +124,9 @@ def update_pembayaran(id_pembayaran):
     pembayaran.metode_pembayaran = body.get("metode_pembayaran", pembayaran.metode_pembayaran)
     pembayaran.status = body.get("status", pembayaran.status)
 
-    # Generate QR code baru jika tidak disediakan
-    if "qr_code_url" not in body or body.get("qr_code_url") is None:
-        qr_data = f"Pengguna:{pembayaran.id_pengguna}_Menu:{pembayaran.id_menu}_Jumlah:{pembayaran.jumlah}_Metode:{pembayaran.metode_pembayaran}"
-        pembayaran.qr_code_url = generate_qr_code_url(qr_data)
-    else:
-        pembayaran.qr_code_url = body.get("qr_code_url")
+    # Generate QR code baru
+    qr_data = f"ID_Pembayaran:{pembayaran.id_pembayaran}_Pengguna:{pembayaran.id_pengguna}_Menu:{pembayaran.id_menu}_Jumlah:{pembayaran.jumlah}_Metode:{pembayaran.metode_pembayaran}"
+    pembayaran.qr_code_url = generate_qr_code_url(qr_data, pembayaran.id_pembayaran)
 
     db.commit()
     db.refresh(pembayaran)
