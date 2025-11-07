@@ -1,7 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, func
 from config.database import Base
 
-
 class Menu(Base):
     __tablename__ = "menu"
 
@@ -12,4 +11,4 @@ class Menu(Base):
     deskripsi = Column(String, nullable=False)
     image_url = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), server_onupdate=func.now(), nullable=False)
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
