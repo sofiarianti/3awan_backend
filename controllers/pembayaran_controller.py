@@ -67,7 +67,6 @@ def add_pembayaran():
     db: Session = next(get_db())
     body = request.json
 
-    # Validasi data yang diperlukan
     required_fields = ["id_pengguna", "id_menu", "id_kategori", "jumlah", "metode_pembayaran", "status"]
     for field in required_fields:
         if field not in body:
@@ -85,13 +84,39 @@ def add_pembayaran():
     db.commit()
     db.refresh(new_data)
 
-    # Data untuk QR code
-    qr_data = f"ID_Pembayaran:{new_data.id_pembayaran}_Pengguna:{body['id_pengguna']}_Menu:{body['id_menu']}_Jumlah:{body['jumlah']}_Metode:{body['metode_pembayaran']}"
+    # Ambil data lengkap setelah disimpan
+    joined_data = (
+        db.query(
+            Pembayaran,
+            Pengguna.nama,
+            Menu.nama_makanan,
+            Kategori.kategori
+        )
+        .join(Pengguna, Pembayaran.id_pengguna == Pengguna.id_pengguna)
+        .join(Menu, Pembayaran.id_menu == Menu.id_menu)
+        .join(Kategori, Pembayaran.id_kategori == Kategori.id_kategori)
+        .filter(Pembayaran.id_pembayaran == new_data.id_pembayaran)
+        .first()
+    )
 
-    # Generate QR code
-    new_data.qr_code_url = generate_qr_code_url(qr_data, new_data.id_pembayaran)
-    db.commit()
-    db.refresh(new_data)
+    # Buat isi QR code dari hasil join
+    if joined_data:
+        pembayaran, nama_pengguna, nama_menu, kategori = joined_data
+        qr_data = (
+            f"ID Pembayaran: {pembayaran.id_pembayaran}\n"
+            f"Nama Pengguna: {nama_pengguna}\n"
+            f"Menu: {nama_menu}\n"
+            f"Kategori: {kategori}\n"
+            f"Jumlah: {pembayaran.jumlah}\n"
+            f"Metode: {pembayaran.metode_pembayaran}\n"
+            f"Status: {pembayaran.status}\n"
+            f"Tanggal: {pembayaran.created_at}"
+        )
+
+        # Generate QR code dengan data lengkap
+        new_data.qr_code_url = generate_qr_code_url(qr_data, new_data.id_pembayaran)
+        db.commit()
+        db.refresh(new_data)
 
     return jsonify({
         "message": "Data pembayaran berhasil ditambahkan",
