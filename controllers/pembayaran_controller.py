@@ -65,72 +65,67 @@ def get_all_pembayaran():
 
 def add_pembayaran():
     db: Session = next(get_db())
-    body = request.json
+    try:
+        body = request.json
 
-    required_fields = ["id_pengguna", "id_menu", "id_kategori", "jumlah", "metode_pembayaran", "status"]
-    for field in required_fields:
-        if field not in body:
-            return jsonify({"message": f"Field {field} harus diisi"}), 400
+        required_fields = ["id_pengguna", "id_menu", "id_kategori", "jumlah", "metode_pembayaran", "status"]
+        for field in required_fields:
+            if field not in body:
+                return jsonify({"message": f"Field {field} harus diisi"}), 400
 
-    new_data = Pembayaran(
-        id_pengguna=body["id_pengguna"],
-        id_menu=body["id_menu"],
-        id_kategori=body["id_kategori"],
-        jumlah=body["jumlah"],
-        metode_pembayaran=body["metode_pembayaran"],
-        status=body["status"]
-    )
-    db.add(new_data)
-    db.commit()
-    db.refresh(new_data)
+        new_data = Pembayaran(
+    id_pengguna=body["id_pengguna"],
+    id_menu=body["id_menu"],
+    id_kategori=body["id_kategori"],
+    jumlah=body["jumlah"],
+    metode_pembayaran=body["metode_pembayaran"],
+    qr_code_url="",  # isi sementara
+    status=body["status"]
+)
 
-    # Ambil data lengkap setelah disimpan
-    joined_data = (
-        db.query(
-            Pembayaran,
-            Pengguna.nama,
-            Menu.nama_makanan,
-            Kategori.kategori
-        )
-        .join(Pengguna, Pembayaran.id_pengguna == Pengguna.id_pengguna)
-        .join(Menu, Pembayaran.id_menu == Menu.id_menu)
-        .join(Kategori, Pembayaran.id_kategori == Kategori.id_kategori)
-        .filter(Pembayaran.id_pembayaran == new_data.id_pembayaran)
-        .first()
-    )
-
-    # Buat isi QR code dari hasil join
-    if joined_data:
-        pembayaran, nama_pengguna, nama_menu, kategori = joined_data
-        qr_data = (
-            f"ID Pembayaran: {pembayaran.id_pembayaran}\n"
-            f"Nama Pengguna: {nama_pengguna}\n"
-            f"Menu: {nama_menu}\n"
-            f"Kategori: {kategori}\n"
-            f"Jumlah: {pembayaran.jumlah}\n"
-            f"Metode: {pembayaran.metode_pembayaran}\n"
-            f"Status: {pembayaran.status}\n"
-            f"Tanggal: {pembayaran.created_at}"
-        )
-
-        # Generate QR code dengan data lengkap
-        new_data.qr_code_url = generate_qr_code_url(qr_data, new_data.id_pembayaran)
+        db.add(new_data)
         db.commit()
         db.refresh(new_data)
 
-    return jsonify({
-        "message": "Data pembayaran berhasil ditambahkan",
-        "data": {
-            "id_pembayaran": new_data.id_pembayaran,
-            "id_pengguna": new_data.id_pengguna,
-            "id_menu": new_data.id_menu,
-            "id_kategori": new_data.id_kategori,
-            "jumlah": new_data.jumlah,
-            "metode_pembayaran": new_data.metode_pembayaran,
-            "qr_code_url": new_data.qr_code_url,
-            "status": new_data.status
-        }
-    })
+        joined_data = (
+            db.query(Pembayaran, Pengguna.nama, Menu.nama_makanan, Kategori.kategori)
+            .join(Pengguna, Pembayaran.id_pengguna == Pengguna.id_pengguna)
+            .join(Menu, Pembayaran.id_menu == Menu.id_menu)
+            .join(Kategori, Pembayaran.id_kategori == Kategori.id_kategori)
+            .filter(Pembayaran.id_pembayaran == new_data.id_pembayaran)
+            .first()
+        )
+
+        if joined_data:
+            pembayaran, nama_pengguna, nama_menu, kategori = joined_data
+            qr_data = (
+                f"ID Pembayaran: {pembayaran.id_pembayaran}\n"
+                f"Nama Pengguna: {nama_pengguna}\n"
+                f"Menu: {nama_menu}\n"
+                f"Kategori: {kategori}\n"
+                f"Jumlah: {pembayaran.jumlah}\n"
+                f"Metode: {pembayaran.metode_pembayaran}\n"
+                f"Status: {pembayaran.status}\n"
+                f"Tanggal: {pembayaran.created_at.strftime('%Y-%m-%d %H:%M:%S') if pembayaran.created_at else ''}"
+            )
+
+            new_data.qr_code_url = generate_qr_code_url(qr_data, new_data.id_pembayaran)
+            db.commit()
+            db.refresh(new_data)
+
+        return jsonify({
+            "message": "Data pembayaran berhasil ditambahkan",
+            "data": {
+                "id_pembayaran": new_data.id_pembayaran,
+                "qr_code_url": new_data.qr_code_url
+            }
+        })
+
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return jsonify({"error": str(e)}), 500
+
 
 
 def update_pembayaran(id_pembayaran):
