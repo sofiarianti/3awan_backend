@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, send_from_directory
 from flask_cors import CORS
 from config.database import engine, Base
 from routes.web import web
@@ -8,6 +8,11 @@ import os  # untuk ambil PORT dari Railway
 # Inisialisasi Flask
 app = Flask(__name__)
 CORS(app)
+
+# Pastikan folder qrcodes bisa diakses publik
+@app.route('/qrcodes/<path:filename>')
+def serve_qr_code(filename):
+    return send_from_directory(os.path.join(os.getcwd(), 'qrcodes'), filename)
 
 # Buat tabel otomatis kalau belum ada
 Base.metadata.create_all(bind=engine)

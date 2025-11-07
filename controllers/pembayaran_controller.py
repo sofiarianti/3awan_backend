@@ -11,8 +11,11 @@ import os
 
 def generate_qr_code_url(data, id_pembayaran):
     """
-    Generate QR code and save it as a file
+    Generate QR code, simpan ke folder lokal, dan return URL publik
     """
+    import qrcode
+    import os
+
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -24,13 +27,20 @@ def generate_qr_code_url(data, id_pembayaran):
 
     img = qr.make_image(fill_color="black", back_color="white")
 
-    # Save the image
+    # Pastikan folder qrcodes ada
     if not os.path.exists("qrcodes"):
         os.makedirs("qrcodes")
-    file_path = f"qrcodes/pembayaran_{id_pembayaran}.png"
+
+    # Simpan file QR code ke lokal
+    file_name = f"pembayaran_{id_pembayaran}.png"
+    file_path = os.path.join("qrcodes", file_name)
     img.save(file_path)
 
-    return file_path
+    # URL publik — ubah sesuai domain kamu di Railway
+    base_url = "https://3awanbackend-production.up.railway.app"
+    public_url = f"{base_url}/qrcodes/{file_name}"
+
+    return public_url
 
 
 def get_all_pembayaran():
